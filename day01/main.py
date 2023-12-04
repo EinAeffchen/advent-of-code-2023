@@ -20,15 +20,15 @@ def task1(input_data: list):
 
 def task2(input_data):
     numbers = {
-        "one": "1",
-        "two": "2",
-        "three": "3",
-        "four": "4",
-        "five": "5",
-        "six": "6",
-        "seven": "7",
-        "eight": "8",
-        "nine": "9",
+        "one": "one1one",
+        "two": "two2two",
+        "three": "three3three",
+        "four": "four4four",
+        "five": "five5five",
+        "six": "six6six",
+        "seven": "seven7seven",
+        "eight": "eight8eight",
+        "nine": "nine9nine",
     }
     translated_data = list()
     for row in input_data:
