@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 def read_lines(input_file: Path):
     with open(input_file, "r") as f_in:
-        return f_in.readlines()
+        return f_in.read().splitlines()
 
 
 TEST_DATA = [
