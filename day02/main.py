@@ -7,60 +7,77 @@ def read_lines(input_file: Path):
         return f_in.readlines()
 
 
+def split_into_dict(game):
+    draw_dict = dict()
+    draws = game.split(",")
+    for draw in draws:
+        count, color = draw.split()
+        draw_dict[color] = int(count)
+    return draw_dict
+
+
+def parse_input(data: list[str]) -> dict:
+    game_data = dict()
+    for row in data:
+        game, pulls = row.split(":")
+        game_number = int(game[5:])
+        pulls = pulls.split(";")
+        game_data[game_number] = [split_into_dict(pull) for pull in pulls]
+    return game_data
+
+
 TEST_DATA = [
-    "467..114..",
-    "...*......",
-    "..35..633.",
-    "......#...",
-    "617*......",
-    ".....+.58.",
-    "..592.....",
-    "......755.",
-    "...$.*....",
-    ".664.598..",
+    "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green",
+    "Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue",
+    "Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red",
+    "Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red",
+    "Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green",
 ]
 
 data = read_lines(Path(__file__).parent / "input.txt")
 
 
-class NumberBlock:
-    value: int
-    adjacent = list[str]
-
-    def __init__(self, input_rows: list[str]) -> None:
-        raw_value = ""
-        for i, row in enumerate(input_rows):
-            for symbol in row:
-                if symbol.isnumeric() and i == 1:
-                    raw_value += symbol
-                elif symbol != ".":
-                    self.adjacent.append(symbol)
+def sum_ids_by_filter(data: dict, game_filter: dict):
+    result = 0
+    for game_id, game_data in data.items():
+        for color, limit in game_filter.items():
+            if any(
+                [True for round in game_data if round.get(color, 0) > limit]
+            ):
+                game_id = 0
+        result += game_id
+    return result
 
 
-def parse_schematic(input_data: list):
-    number_blocks = list()
-    for x, row in enumerate(input_data):
-        if x == 0:
-            x_start = 0
-        elif x == len(input_data):
-            x_end = x
-        else:
-            x_start = x - 1
-            x_end = x + 1
-        for y, symbol in enumerate(row):
-            if symbol.isnumeric():
-                y_start = y
-            else:
-                y_end = y
-                # TODO add padding around
-                number_blocks.append(
-                    NumberBlock(
-                        [
-                            row[y_start:y_end]
-                            for row in input_data[x_start:x_end]
-                        ]
-                    )
-                )
+def get_power_of_minimum_cubes(game_data: dict):
+    result = 0
+    for drawings in game_data.values():
+        minimum_set = dict()
+        for drawing in drawings:
+            for color, count in drawing.items():
+                if minimum_set.get(color, count) <= count:
+                    minimum_set[color] = count
+        result += reduce((lambda x, y: x * y), minimum_set.values())
+    return result
+
+
+def task01(input_data: list[str], test=True):
+    game_data = parse_input(input_data)
+    if test:
+        assert len(game_data[1]) == 3
+    game_filter = {"red": 12, "green": 13, "blue": 14}
+    result = sum_ids_by_filter(game_data, game_filter)
+    if test:
+        assert result == 8
+    return result
+
+
+def task02(input_data: list[str], test=True):
+    game_data = parse_input(input_data)
+    result = get_power_of_minimum_cubes(game_data)
+    if test:
+        assert result == 2286
+    return result
 
 
 task01(TEST_DATA)
