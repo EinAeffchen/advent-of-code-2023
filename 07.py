@@ -25,7 +25,7 @@ class Card:
     symbol: str
 
     def __post_init__(self):
-        order = "23456789TJQKA"
+        order = "J23456789TQKA"
         self.order = [symbol for symbol in order]
 
     def __lt__(self, other: "Card"):
@@ -36,26 +36,40 @@ class Card:
 class Hand:
     cards: list[Card]
     bid: int
+    task2: bool = False
 
     def __post_init__(self):
-        self.ranking = self.rank()
+        self.ranking = self._rank()
 
-    def rank(self):
-        counts = self.n_of_kind().values()
+    def _count_joker(self):
+        return len([True for card in self.cards if card.symbol == "J"])
+
+    def _rank(self):
+        counts = list(self._n_of_kind().values())
+        if not counts:
+            counts = [0]
+        if self.task2:
+            for _ in range(self._count_joker()):
+                highest_number = max(counts)
+                if highest_number != 5:
+                    counts[counts.index(highest_number)] += 1
         if 5 in counts:
-            return 7
+            value = 7
         elif 4 in counts:
-            return 6
+            value = 6
         elif 3 in counts and 2 in counts:
-            return 5
+            value = 5
         elif 3 in counts:
-            return 4
+            value = 4
+        elif Counter(counts)[2] == 2:
+            value = 3
         elif 2 in counts:
-            return 3
+            value = 2
         elif 1 in counts:
-            return 2
+            value = 1
         else:
-            return 0
+            value = 0
+        return value
 
     def __lt__(self, other):
         if self.ranking == other.ranking:
@@ -68,16 +82,15 @@ class Hand:
     def _hand_to_string(self):
         return "".join([card.symbol for card in self.cards])
 
-    def n_of_kind(self):
-        return Counter(self._hand_to_string())
+    def _n_of_kind(self):
+        count_string = self._hand_to_string()
+        if self.task2:
+            count_string = count_string.replace("J", "")
+        return Counter(count_string)
 
 
 def calculate_winnings(hands: list[Hand]):
-    # return sum([(i + 1) * hand.bid for i, hand in enumerate(hands)])
-    summe = 0
-    for i, hand in enumerate(hands):
-        summe += (i + 1) * hand.bid
-    return summe
+    return sum([(i + 1) * hand.bid for i, hand in enumerate(hands)])
 
 
 def task01(input_data: list[str], test=True):
@@ -94,7 +107,23 @@ def task01(input_data: list[str], test=True):
     return winnings
 
 
+def task02(input_data: list[str], test=True):
+    hands = list()
+    for row in input_data:
+        if row != "":
+            raw_cards, bid = row.split()
+            hand = Hand(
+                [Card(symbol) for symbol in raw_cards], int(bid), task2=True
+            )
+            hands.append(hand)
+    hands.sort()
+    winnings = calculate_winnings(hands)
+    if test:
+        assert winnings == 5905
+    return winnings
+
+
 task01(TEST_DATA)
 print(task01(get_data(7), test=False))
-# task02(TEST_DATA)
-# print(task02(data, test=False))
+task02(TEST_DATA)
+print(task02(get_data(7), test=False))
