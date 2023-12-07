@@ -115,8 +115,20 @@ def convert_range(row: list[int], seeds: list[int]) -> int:
             seeds[1] - leftover_range,
         ]
         return unmapped_seeds, mapped_seeds
+    # left and right leftover
+    #   6789
+    #   4567
+    # 23456789
     else:
-        print("WHAT?!")
+        left_leftover = target_min - seeds_min
+        right_leftover = seeds_max - target_max
+        mapped_start = destination - target_min + seeds_min + left_leftover
+        mapped_seeds = [mapped_start, row[2]]
+        unmapped_seeds = [
+            [seeds_min, left_leftover],
+            [target_max, right_leftover],
+        ]
+        return unmapped_seeds, mapped_seeds
 
 
 # destination, source, range
@@ -154,6 +166,9 @@ def convert_to_location_by_range(maps: dict, mapping_dict: dict):
             for i, row in enumerate(maps[map]):
                 final = i == len(maps[map]) - 1
                 unmapped, mapped_seeds = convert_range(row, unmapped)
+                if len(unmapped) > 0 and isinstance(unmapped[0], list):
+                    unmapped_seeds.append(unmapped[1])
+                    unmapped = unmapped[0]
                 if mapped_seeds:
                     try:
                         mapping_dict[order[order.index(map) + 1]] = (
@@ -161,7 +176,9 @@ def convert_to_location_by_range(maps: dict, mapping_dict: dict):
                             + [mapped_seeds]
                         )
                     except IndexError:
-                        mapping_dict["final"] = mapped_seeds
+                        mapping_dict["final"] = mapping_dict.get(
+                            "final", []
+                        ) + [mapped_seeds]
                 if not unmapped:
                     break
             if final and unmapped:
@@ -171,7 +188,9 @@ def convert_to_location_by_range(maps: dict, mapping_dict: dict):
                         + [unmapped]
                     )
                 except IndexError:
-                    mapping_dict["final"] = unmapped
+                    mapping_dict["final"] = mapping_dict.get("final", []) + [
+                        unmapped
+                    ]
     return mapping_dict
 
 
@@ -190,11 +209,11 @@ def task02(input_data: str, test=True):
     seeds = [maps["seeds"][i : i + 2] for i in range(0, len(maps["seeds"]), 2)]
     locations = convert_to_location_by_range(maps, {"seed-to-soil": seeds})
     if test:
-        assert min(locations["final"]) == 46
-    return min(locations)
+        assert min([rng[0] for rng in locations["final"]]) == 46
+    return min([rng[0] for rng in locations["final"]])
 
 
-task01(TEST_DATA)
-print(task01(data, test=False))
+# task01(TEST_DATA)
+# print(task01(data, test=False))
 task02(TEST_DATA)
-# print(task02(data, test=False))
+print(task02(data, test=False))
