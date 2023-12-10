@@ -18,6 +18,3 @@ def get_data(day: int):
     with open("input.txt", "w") as f_out:
         f_out.write(data)
     return data.split("\n")
-
-
-get_data(8)
