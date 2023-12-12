@@ -11,10 +11,10 @@ def get_data(day: int):
         if creation_date.day == day:
             with open(p) as f_in:
                 data = f_in.read()
-            return data.split("\n")
+            return [row for row in data.split("\n") if row]
     data = requests.get(
         f"https://adventofcode.com/2023/day/{day}/input", cookies=cookie
     ).text
     with open("input.txt", "w") as f_out:
         f_out.write(data)
-    return data.split("\n")
+    return [row for row in data.split("\n") if row]
