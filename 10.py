@@ -127,7 +127,7 @@ def task02(input_data: list[str], test=True):
     maze.walk_maze()
     with open("maze.txt", "w") as f_out:
         for row in maze.number_maze:
-            f_out.write("|".join([str(s) for s in row]) + "\n")
+            f_out.write("".join(["█" if s > 0 else " " for s in row]) + "\n")
 
 
 task01(TEST_DATA)
