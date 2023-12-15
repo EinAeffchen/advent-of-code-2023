@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 def get_data(day: int):
-    p = Path(__file__).parent / "input.txt"
+    p = Path(__file__).parent / f"input_{day}.txt"
     if p.is_file():
         creation_date = datetime.fromtimestamp(p.stat().st_mtime)
         if creation_date.day == day:
